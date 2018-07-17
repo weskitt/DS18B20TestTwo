@@ -15,7 +15,7 @@ class DS18B20Class
 public:
 	OneWire devices;
 private:
-
+	int devicesCount = 0;
 	 byte index;
 	 byte present = 0;
 	 byte type_s;
@@ -28,12 +28,13 @@ private:
  public:
 	DS18B20Class(){}
 	DS18B20Class(uint8_t pin) { devices.begin(pin); }
-	//void init(uint8_t pin);
+	void init(uint8_t pin);
 	bool search(); //example search(newAddr);
 	void getModel(byte value); //example  getModel(newAddr[0])
 	void requestConvert();
 	void readTemperature(int id);
 	void printTemp(int id);
+	void printAll();
 	void printDevice(int id, float t= 666);
 };
 

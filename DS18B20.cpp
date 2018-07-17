@@ -5,6 +5,12 @@
 #include "DS18B20.h"
 
 
+void DS18B20Class::init(uint8_t pin)
+{
+	devices.begin(pin);
+	search();
+}
+
 bool DS18B20Class::search()
 {
 	Serial.println();
@@ -12,14 +18,18 @@ bool DS18B20Class::search()
 	{
 		if (devices.search(addrs[id])) {
 			printDevice(id);
-			if (OneWire::crc8(addrs[id], 7) != addrs[id][7]) 
+			if (OneWire::crc8(addrs[id], 7) != addrs[id][7])
 				Serial.println("CRC is not valid!");
+			else
+				devicesCount += 1;
 
 			//
 		}
 		else {
 			//Serial.println();
-			Serial.println("No more addresses.");
+			Serial.print(devicesCount);
+			Serial.println(" devices was found!");
+			//Serial.println("No more addresses.");
 			devices.reset_search();
 			delay(250);
 
@@ -117,6 +127,15 @@ void DS18B20Class::printTemp(int id)
 	//Serial.println(" C ");
 	//Serial.print(fahrenheit);
 	//Serial.println(" ¨H");
+}
+
+void DS18B20Class::printAll()
+{
+	for (int id = 0; id < devicesCount; id++)
+	{
+		readTemperature(id);
+		printDevice(id, celsius);
+	}
 }
 
 void DS18B20Class::printDevice(int id, float t)
