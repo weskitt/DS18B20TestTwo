@@ -11,32 +11,39 @@ void DS18B20Class::init(uint8_t pin)
 	search();
 }
 
-bool DS18B20Class::search()
+byte DS18B20Class::search()
 {
 	Serial.println();
-	for(int id=0; id<8; id++)
+	
+	for(byte id=0; id<8; id++)
 	{
-		if (devices.search(addrs[id])) {
+		if (devices.search(ds18b20[id].addr)) {
 			printDevice(id);
-			if (OneWire::crc8(addrs[id], 7) != addrs[id][7])
+			if (OneWire::crc8(ds18b20[id].addr, 7) != ds18b20[id].addr[7]) {
 				Serial.println("CRC is not valid!");
+				return 0;
+			}
 			else
+			{
 				devicesCount += 1;
-
+				String ss = " ";
+				for (byte index = 1; index < 7; index++) 
+					ss += ds18b20[id].addr[index];
+				addrss[id] = ss;
+				Serial.println(addrss[id]);
+			}
+			
 			//
 		}
 		else {
-			//Serial.println();
 			Serial.print(devicesCount);
 			Serial.println(" devices was found!");
-			//Serial.println("No more addresses.");
 			devices.reset_search();
-			delay(250);
+			delay(250); //等待完成复位
 
 			break;
 		}
 	}
-	//return false;
 }
 
 void DS18B20Class::getModel(byte value)
@@ -44,15 +51,15 @@ void DS18B20Class::getModel(byte value)
 	switch (value) {
 	case 0x10:
 		Serial.print("  Chip = DS18S20  ");  // or old DS1820
-		type_s = 1;
+		//type_s = 1;
 		break;
 	case 0x28:
 		Serial.print("  Chip = DS18B20  ");
-		type_s = 0;
+		//type_s = 0;
 		break;
 	case 0x22:
 		Serial.print("  Chip = DS1822  ");
-		type_s = 0;
+		//type_s = 0;
 		break;
 	default:
 		Serial.println("  Device is not a DS18x20 family device.  ");
@@ -60,33 +67,21 @@ void DS18B20Class::getModel(byte value)
 	}
 }
 
-void DS18B20Class::requestConvert()
+void DS18B20Class::readTemperature(uint8_t id)
 {
+	byte data[12];
 	devices.reset();
-	devices.select(addr);
-	devices.write(0x44, 1);         // start conversion, with parasite power on at the end
-
-	delay(1000);     // maybe 750ms is enough, maybe not
-					 // we might do a ds.depower() here, but the reset will take care of it.
-}
-
-void DS18B20Class::readTemperature(int id)
-{
-	devices.reset();
-	devices.select(addrs[id]);
+	devices.select(ds18b20[id].addr);
 	devices.write(0x44, 1);         // start conversion, with parasite power on at the end
 
 	delay(1000);     // maybe 750ms is enough, maybe not
 					 // we might do a ds.depower() here, but the reset will take care of it.
 
 	present = devices.reset();
-	devices.select(addrs[id]);
+	devices.select(ds18b20[id].addr);
 	devices.write(0xBE);         // Read Scratchpad
 
-	//Serial.print("  Data = ");
-	//Serial.print(present, HEX);
-	//Serial.print(" ");
-	for (index = 0; index < 9; index++) {           // we need 9 bytes
+	for (uint8_t index = 0; index < 9; index++) {           // we need 9 bytes
 		data[index] = devices.read();
 		//Serial.print(data[index], HEX);
 		//Serial.print(" ");
@@ -117,20 +112,17 @@ void DS18B20Class::readTemperature(int id)
 	//fahrenheit = celsius * 1.8 + 32.0;
 }
 
-void DS18B20Class::printTemp(int id)
+void DS18B20Class::printTemp(uint8_t id)
 {
-	
+	String str_content;
+
 	readTemperature(id);
 	printDevice(id, celsius);
-	//Serial.print("   Temperature = ");
-	//Serial.print(celsius);
-	//Serial.println(" C ");
-	//Serial.print(fahrenheit);
-	//Serial.println(" ℉");
 }
 
 void DS18B20Class::printAll()
 {
+	String str_content;
 	for (int id = 0; id < devicesCount; id++)
 	{
 		readTemperature(id);
@@ -138,20 +130,23 @@ void DS18B20Class::printAll()
 	}
 }
 
-void DS18B20Class::printDevice(int id, float t)
+void DS18B20Class::printDevice(uint8_t id, float t)
 {
 	Serial.print("ID:");
 	Serial.print(id);
-	getModel(addrs[id][0]);
-	Serial.print("Address: ");
+	Serial.print(" Address: ");
+
 	for (index = 0; index < 8; index++) {
 		Serial.print(addrs[id][index], HEX);
 		if (index<7) Serial.write('-');
 	}
 
+
+
 	if (t != 666.0)
 	{
 		Serial.print("   Temperature = ");
+
 		Serial.print(t);
 		Serial.print(" C ");
 	}

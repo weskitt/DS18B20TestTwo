@@ -10,32 +10,47 @@
 	#include "WProgram.h"
 #endif
 
+struct DS18B20Struct
+{
+	uint8_t index; //索引
+	byte addr[8];
+	//byte romData[12];
+	uint8_t interval; //采样时间间隔
+	float data[4]; //16 byte
+	//total 1+8+1+16= 26 byte
+};
+
+
 class DS18B20Class
 {
 public:
 	OneWire devices;
+	byte devicesCount = 0;
+	byte DevicesCount() { return devicesCount; }
 private:
-	int devicesCount = 0;
-	 byte index;
+	
+	 //byte index;
 	 byte present = 0;
-	 byte type_s;
-	 byte data[12];
-	 byte addr[8];
-	 byte addrs[8][8];
-	 float celsius, fahrenheit;
+	 //byte type_s;
+	 //byte data[12];
+	 //byte addr[8];
+	 //byte addrs[8][8];
+	 DS18B20Struct ds18b20[4]; //26*4= 104 byte
+	 //String ss;
+	 String addrss[4];
+	 float celsius;
 
 
  public:
 	DS18B20Class(){}
 	DS18B20Class(uint8_t pin) { devices.begin(pin); }
 	void init(uint8_t pin);
-	bool search(); //example search(newAddr);
+	byte search(); //example search(newAddr);
 	void getModel(byte value); //example  getModel(newAddr[0])
-	void requestConvert();
-	void readTemperature(int id);
-	void printTemp(int id);
+	void readTemperature(uint8_t id);
+	void printTemp(uint8_t id);
 	void printAll();
-	void printDevice(int id, float t= 666);
+	void printDevice(uint8_t id, float t= 666);
 };
 
 extern DS18B20Class DS18B20;
