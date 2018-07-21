@@ -27,7 +27,7 @@ class DS18B20Class
 public:
 	OneWire devices;
 	byte devicesCount = 0;
-	byte DevicesCount() { return devicesCount; }
+	//byte DevicesCount() { return devicesCount; }
 private:
 	 byte present = 0;
 	 DS18B20Struct ds18b20[4]; //26*4= 104 byte
