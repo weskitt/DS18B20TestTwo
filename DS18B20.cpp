@@ -26,6 +26,7 @@ byte DS18B20Class::search()
 			else
 			{
 				devicesCount += 1;
+				Serial.println();
 				//addrss[id] = " ";
 				//for (byte index = 1; index < 7; index++)
 				//	addrss[id] += ds18b20[id].addr[index];
@@ -33,8 +34,10 @@ byte DS18B20Class::search()
 			}
 		}
 		else {
+			//Serial.println();
 			Serial.print(devicesCount);
 			Serial.println(" devices was found!");
+			Serial.println();
 			devices.reset_search();
 			delay(250); //等待完成复位
 
@@ -47,15 +50,15 @@ void DS18B20Class::getModel(uint8_t id)
 {
 	switch (ds18b20[id].addr[0]) {
 	case 0x10:
-		Serial.print("  Chip = DS18S20  ");  // or old DS1820
+		//Serial.print("  Chip = DS18S20  ");  // or old DS1820
 		ds18b20[id].type_s = 1;
 		break;
 	case 0x28:
-		Serial.print("  Chip = DS18B20  ");
+		//Serial.print("  Chip = DS18B20  ");
 		ds18b20[id].type_s = 0;
 		break;
 	case 0x22:
-		Serial.print("  Chip = DS1822  ");
+		//Serial.print("  Chip = DS1822  ");
 		ds18b20[id].type_s = 0;
 		break;
 	default:
@@ -122,6 +125,7 @@ void DS18B20Class::printAll()
 		readTemperature(id);
 		printDevice(id, celsius);
 	}
+	Serial.println();
 }
 
 void DS18B20Class::printDevice(uint8_t id, float t)
@@ -129,22 +133,19 @@ void DS18B20Class::printDevice(uint8_t id, float t)
 	Serial.print("ID:");
 	Serial.print(id);
 	getModel(id);
-	Serial.print(" 64ROM: ");
+	Serial.print("  64ROM: ");
 	for (uint8_t index = 0; index < 8; index++) {
 		Serial.print(ds18b20[id].addr[index], HEX);
 		if (index<7) Serial.write('-');
 	}
 
-
-
 	if (t != 666.0)
 	{
-		Serial.print("   Temperature = ");
-
+		Serial.print("  ");
 		Serial.print(t);
-		Serial.print(" C ");
+		Serial.print("  ****  ");
 	}
-	Serial.println();
+	//Serial.println();
 }
 
 
