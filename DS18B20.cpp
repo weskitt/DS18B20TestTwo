@@ -26,14 +26,11 @@ byte DS18B20Class::search()
 			else
 			{
 				devicesCount += 1;
-				String ss = " ";
-				for (byte index = 1; index < 7; index++) 
-					ss += ds18b20[id].addr[index];
-				addrss[id] = ss;
-				Serial.println(addrss[id]);
+				//addrss[id] = " ";
+				//for (byte index = 1; index < 7; index++)
+				//	addrss[id] += ds18b20[id].addr[index];
+				//Serial.println(addrss[id]);
 			}
-			
-			//
 		}
 		else {
 			Serial.print(devicesCount);
@@ -46,20 +43,20 @@ byte DS18B20Class::search()
 	}
 }
 
-void DS18B20Class::getModel(byte value)
+void DS18B20Class::getModel(uint8_t id)
 {
-	switch (value) {
+	switch (ds18b20[id].addr[0]) {
 	case 0x10:
 		Serial.print("  Chip = DS18S20  ");  // or old DS1820
-		//type_s = 1;
+		ds18b20[id].type_s = 1;
 		break;
 	case 0x28:
 		Serial.print("  Chip = DS18B20  ");
-		//type_s = 0;
+		ds18b20[id].type_s = 0;
 		break;
 	case 0x22:
 		Serial.print("  Chip = DS1822  ");
-		//type_s = 0;
+		ds18b20[id].type_s = 0;
 		break;
 	default:
 		Serial.println("  Device is not a DS18x20 family device.  ");
@@ -93,7 +90,7 @@ void DS18B20Class::readTemperature(uint8_t id)
 	// convert the data to actual temperature
 
 	unsigned int raw = (data[1] << 8) | data[0];
-	if (type_s) {
+	if (ds18b20[id].type_s) {
 		raw = raw << 3; // 9 bit resolution default
 		if (data[7] == 0x10) {
 			// count remain gives full 12 bit resolution
@@ -114,16 +111,13 @@ void DS18B20Class::readTemperature(uint8_t id)
 
 void DS18B20Class::printTemp(uint8_t id)
 {
-	String str_content;
-
 	readTemperature(id);
 	printDevice(id, celsius);
 }
 
 void DS18B20Class::printAll()
 {
-	String str_content;
-	for (int id = 0; id < devicesCount; id++)
+	for (uint8_t id = 0; id < devicesCount; id++)
 	{
 		readTemperature(id);
 		printDevice(id, celsius);
@@ -134,10 +128,10 @@ void DS18B20Class::printDevice(uint8_t id, float t)
 {
 	Serial.print("ID:");
 	Serial.print(id);
-	Serial.print(" Address: ");
-
-	for (index = 0; index < 8; index++) {
-		Serial.print(addrs[id][index], HEX);
+	getModel(id);
+	Serial.print(" 64ROM: ");
+	for (uint8_t index = 0; index < 8; index++) {
+		Serial.print(ds18b20[id].addr[index], HEX);
 		if (index<7) Serial.write('-');
 	}
 
